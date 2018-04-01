@@ -2,15 +2,20 @@ import frames.timing.*;
 import frames.primitives.*;
 import frames.processing.*;
 
+ArrayList<Point> dots = new ArrayList<Point>();
 // 1. Frames' objects
 Scene scene;
 Frame frame;
 Vector v1, v2, v3;
+
 // timing
 TimingTask spinningTask;
 boolean yDirection;
 // scaling is a power of 2
 int n = 4;
+
+//testing vector
+Vector v4;
 
 // 2. Hints
 boolean triangleHint = true;
@@ -75,8 +80,27 @@ void triangleRaster() {
   // here we convert v1 to illustrate the idea
   if (debug) {
     pushStyle();
-    stroke(255, 255, 0, 125);
+    stroke(255, 255, 255, 125);
     point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
+    point(round(frame.coordinatesOf(v2).x()), round(frame.coordinatesOf(v2).y()));
+    //print(frame.coordinatesOf(v4).x(),frame.coordinatesOf(v4).y());
+    /*
+    float first = round(frame.coordinatesOf(v1).y()) - round(frame.coordinatesOf(v2).y());
+    float second = round(frame.coordinatesOf(v2).x()) - round(frame.coordinatesOf(v1).x());
+    float third = round(frame.coordinatesOf(v1).x()) * round(frame.coordinatesOf(v2).y()); 
+    float fourth = round(frame.coordinatesOf(v1).y()) * round(frame.coordinatesOf(v2).x());*/
+    float first = frame.coordinatesOf(v1).y() - frame.coordinatesOf(v2).y();
+    float second = frame.coordinatesOf(v2).x() - frame.coordinatesOf(v1).x();
+    float third = frame.coordinatesOf(v1).x() * frame.coordinatesOf(v2).y(); 
+    float fourth = frame.coordinatesOf(v1).y() * frame.coordinatesOf(v2).x();
+    for(int k = (int) -pow(2,n)/2; k <= pow(2,n)/2; k++){
+      for(int l = (int) -pow(2,n)/2; l <= pow(2,n)/2; l++){
+        float xValue =  width/pow(2,n)*k;
+        float yValue =  width/pow(2,n)*l;
+        if(0 < (first * xValue) + (second * yValue) + (third - fourth))
+          dots.add(new Point(xValue,yValue));
+      }
+    }
     popStyle();
   }
 }
@@ -87,6 +111,8 @@ void randomizeTriangle() {
   v1 = new Vector(random(low, high), random(low, high));
   v2 = new Vector(random(low, high), random(low, high));
   v3 = new Vector(random(low, high), random(low, high));
+  v4 = new Vector(((-8)*width/pow(2,n)),(width/pow(2,n))*(-8));
+  
 }
 
 void drawTriangleHint() {
@@ -97,6 +123,10 @@ void drawTriangleHint() {
   triangle(v1.x(), v1.y(), v2.x(), v2.y(), v3.x(), v3.y());
   strokeWeight(5);
   stroke(0, 255, 255);
+  for(Point p: dots){
+    point(p.x(),p.y());
+  }
+  
   point(v1.x(), v1.y());
   point(v2.x(), v2.y());
   point(v3.x(), v3.y());
