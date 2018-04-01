@@ -83,21 +83,35 @@ void triangleRaster() {
     stroke(255, 255, 255, 125);
     point(round(frame.coordinatesOf(v1).x()), round(frame.coordinatesOf(v1).y()));
     point(round(frame.coordinatesOf(v2).x()), round(frame.coordinatesOf(v2).y()));
+    point(round(frame.coordinatesOf(v3).x()), round(frame.coordinatesOf(v3).y()));
     //print(frame.coordinatesOf(v4).x(),frame.coordinatesOf(v4).y());
     /*
     float first = round(frame.coordinatesOf(v1).y()) - round(frame.coordinatesOf(v2).y());
     float second = round(frame.coordinatesOf(v2).x()) - round(frame.coordinatesOf(v1).x());
     float third = round(frame.coordinatesOf(v1).x()) * round(frame.coordinatesOf(v2).y()); 
     float fourth = round(frame.coordinatesOf(v1).y()) * round(frame.coordinatesOf(v2).x());*/
-    float first = frame.coordinatesOf(v1).y() - frame.coordinatesOf(v2).y();
-    float second = frame.coordinatesOf(v2).x() - frame.coordinatesOf(v1).x();
-    float third = frame.coordinatesOf(v1).x() * frame.coordinatesOf(v2).y(); 
-    float fourth = frame.coordinatesOf(v1).y() * frame.coordinatesOf(v2).x();
+    float first = v1.y() - v2.y();
+    float second = v2.x() - v1.x();
+    float third = v1.x() * v2.y(); 
+    float fourth = v1.y() * v2.x();
+    
+    float v1v2p3 = ( (v1.y() - v2.y()) * v3.x() ) + ( ( v2.x() - v1.x() ) * v3.y() ) + ( ( v1.x() * v2.y() ) - ( v1.y() * v2.x() ) );
+    if( v1v2p3 < 0 ){ 
+      Vector aux = v2;
+      v2 = v3;
+      v3 = aux;
+    }
+    
     for(int k = (int) -pow(2,n)/2; k <= pow(2,n)/2; k++){
       for(int l = (int) -pow(2,n)/2; l <= pow(2,n)/2; l++){
         float xValue =  width/pow(2,n)*k;
         float yValue =  width/pow(2,n)*l;
-        if(0 < (first * xValue) + (second * yValue) + (third - fourth))
+        
+        float v1v2 = ( (v1.y() - v2.y()) * xValue) + ( ( v2.x() - v1.x() ) * yValue) + ( ( v1.x() * v2.y() ) - ( v1.y() * v2.x() ) );
+        float v2v3 = ( (v2.y() - v3.y()) * xValue) + ( ( v3.x() - v2.x() ) * yValue) + ( ( v2.x() * v3.y() ) - ( v2.y() * v3.x() ) );
+        float v3v1 = ( (v3.y() - v1.y()) * xValue) + ( ( v1.x() - v3.x() ) * yValue) + ( ( v3.x() * v1.y() ) - ( v3.y() * v1.x() ) );
+        
+        if( v1v2 > 0 && v2v3 > 0 && v3v1 > 0 )
           dots.add(new Point(xValue,yValue));
       }
     }
@@ -106,6 +120,7 @@ void triangleRaster() {
 }
 
 void randomizeTriangle() {
+  dots = new ArrayList<Point>();
   int low = -width/2;
   int high = width/2;
   v1 = new Vector(random(low, high), random(low, high));
@@ -120,16 +135,19 @@ void drawTriangleHint() {
   noFill();
   strokeWeight(2);
   stroke(255, 0, 0);
-  triangle(v1.x(), v1.y(), v2.x(), v2.y(), v3.x(), v3.y());
-  strokeWeight(5);
-  stroke(0, 255, 255);
+  //triangle(v1.x(), v1.y(), v2.x(), v2.y(), v3.x(), v3.y());
+  strokeWeight(10);
+  stroke(0, 0, 255);
+  
   for(Point p: dots){
     point(p.x(),p.y());
   }
-  
+  pushStyle();
+  stroke( 255, 0, 0 );
   point(v1.x(), v1.y());
   point(v2.x(), v2.y());
   point(v3.x(), v3.y());
+  popStyle();
   popStyle();
 }
 
@@ -140,6 +158,12 @@ void spin() {
     scene.eye().rotate(new Quaternion(yDirection ? new Vector(0, 1, 0) : new Vector(1, 0, 0), PI / 100), scene.anchor());
 }
 
+void debugx() {
+  print( "v1 x: ", v1.x(), " y: ", v1.y(), "\n");
+  print( "v2 x: ", v2.x(), " y: ", v2.y(), "\n");
+  print( "v3 x: ", v3.x(), " y: ", v3.y(), "\n");
+}
+
 void keyPressed() {
   if (key == 'g')
     gridHint = !gridHint;
@@ -148,10 +172,12 @@ void keyPressed() {
   if (key == 'd')
     debug = !debug;
   if (key == '+') {
+    dots = new ArrayList<Point>();
     n = n < 7 ? n+1 : 2;
     frame.setScaling(width/pow( 2, n));
   }
   if (key == '-') {
+    dots = new ArrayList<Point>();
     n = n >2 ? n-1 : 7;
     frame.setScaling(width/pow( 2, n));
   }
@@ -164,4 +190,6 @@ void keyPressed() {
       spinningTask.run(20);
   if (key == 'y')
     yDirection = !yDirection;
+  if ( key == 'f' )
+    debugx();
 }
